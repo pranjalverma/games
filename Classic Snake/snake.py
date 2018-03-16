@@ -24,7 +24,8 @@ pygame.mixer.music.load('Super Mario coin sound (!).mp3')
 
 #intro screen
 def gameIntro():
-	intro = True
+	intro = introAni = True
+	titleCoords = instructCoords = counter = 0
 
 	while intro:
 		for event in pygame.event.get():
@@ -48,14 +49,26 @@ def gameIntro():
 				(randrange(0, display_width), randrange(0, display_height)),
 				'small')
 
+		if counter > 7:
+			introAni = not introAni
+			counter = 0
+		counter += 1
+
+		if introAni:
+			titleCoords = (display_width/2 - 5, display_height/2 - 105)
+			instructCoords =  (display_width/2 - 5, display_height/2 - 5)
+		else:
+			titleCoords = (display_width/2 + 5, display_height/2 - 95)
+			instructCoords = (display_width/2 + 5, display_height/2 + 5)
+
 		showMessage('Welcome to Slither!',
 			green,
-			(display_width/2, display_height/2 - 100),
+			titleCoords,
 			'large')
 
 		showMessage('Press ENTER to start eating or Q to quit',
 			pygame.Color('red'),
-			(display_width/2, display_height/2),
+			instructCoords,
 			'medium')
 
 		showMessage('Made by Pranjal Verma',
