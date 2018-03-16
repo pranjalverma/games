@@ -1,2 +1,2 @@
 # games
-👾🎮 making games now I guess
+👾🎮 something I always wanted to do, so that's cool I guess
