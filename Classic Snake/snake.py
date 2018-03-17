@@ -21,13 +21,14 @@ largefont = pygame.font.Font('game_over.ttf', 200)
 
 #game sounds
 sounds = []
+sounds.append(pygame.mixer.Sound('undertale ost intro.wav'))
 sounds.append(pygame.mixer.Sound('Super_Mario_coin_sound_.wav'))
 sounds.append(pygame.mixer.Sound('donkey kong death sound.wav'))
 
 #intro screen
 def gameIntro():
-	intro = introAni = True
-	titleCoords = instructCoords = counter = 0
+	intro = True
+	sounds[0].play(loops=-1)
 
 	while intro:
 		for event in pygame.event.get():
@@ -51,26 +52,14 @@ def gameIntro():
 				(randrange(0, display_width), randrange(0, display_height)),
 				'small')
 
-		if counter > 7:
-			introAni = not introAni
-			counter = 0
-		counter += 1
-
-		if introAni:
-			titleCoords = (display_width/2 - 5, display_height/2 - 105)
-			instructCoords =  (display_width/2 - 5, display_height/2 - 5)
-		else:
-			titleCoords = (display_width/2 + 5, display_height/2 - 95)
-			instructCoords = (display_width/2 + 5, display_height/2 + 5)
-
 		showMessage('Welcome to Slither!',
 			green,
-			titleCoords,
+			(display_width/2, display_height/2 - 100),
 			'large')
 
 		showMessage('Press ENTER to start eating or Q to quit',
 			pygame.Color('red'),
-			instructCoords,
+			(display_width/2, display_height/2),
 			'medium')
 
 		showMessage('Made by Pranjal Verma',
@@ -98,6 +87,7 @@ def gameLoop():
 
 		#gameover loop
 		while gameOver:
+			sounds[0].stop()
 			gameDisplay.fill(pygame.Color('black'))
 
 			showMessage('Game Over', 
@@ -124,6 +114,7 @@ def gameLoop():
 						gameOver = False
 
 					elif event.key == pygame.K_SPACE:
+						sounds[0].play(loops=-1)
 						gameLoop()
 
 				elif event.type == pygame.QUIT:
@@ -185,7 +176,7 @@ def gameLoop():
 		#checking if snake ran into itself
 		for bodyPart in snakeBody[:-1]:
 			if bodyPart == snakeBody[-1]:
-				sounds[1].play()
+				sounds[2].play()
 				gameOver = True
 
 		drawSnake(block_size, snakeBody)
@@ -207,7 +198,7 @@ def gameLoop():
 		or (appleX <= lead_x + block_size <= appleX + block_size and appleY <= lead_y + block_size <= appleY + block_size)
 		or (appleX <= lead_x <= appleX + block_size and appleY <= lead_y + block_size <= appleY + block_size)
 		or (appleX <= lead_x + block_size <= appleX + block_size and appleY <= lead_y <= appleY + block_size)):
-			sounds[0].play()
+			sounds[1].play()
 			appleX, appleY = genApple()
 			snakeLength += 1
 
