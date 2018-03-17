@@ -19,8 +19,10 @@ smallfont = pygame.font.Font('game_over.ttf', 50)
 mediumfont = pygame.font.Font('game_over.ttf', 75)
 largefont = pygame.font.Font('game_over.ttf', 200)
 
-#scoring sound; for eating an apple
-pygame.mixer.music.load('Super Mario coin sound (!).mp3')
+#game sounds
+sounds = []
+sounds.append(pygame.mixer.Sound('Super_Mario_coin_sound_.wav'))
+sounds.append(pygame.mixer.Sound('donkey kong death sound.wav'))
 
 #intro screen
 def gameIntro():
@@ -183,6 +185,7 @@ def gameLoop():
 		#checking if snake ran into itself
 		for bodyPart in snakeBody[:-1]:
 			if bodyPart == snakeBody[-1]:
+				sounds[1].play()
 				gameOver = True
 
 		drawSnake(block_size, snakeBody)
@@ -204,7 +207,7 @@ def gameLoop():
 		or (appleX <= lead_x + block_size <= appleX + block_size and appleY <= lead_y + block_size <= appleY + block_size)
 		or (appleX <= lead_x <= appleX + block_size and appleY <= lead_y + block_size <= appleY + block_size)
 		or (appleX <= lead_x + block_size <= appleX + block_size and appleY <= lead_y <= appleY + block_size)):
-			pygame.mixer.music.play()
+			sounds[0].play()
 			appleX, appleY = genApple()
 			snakeLength += 1
 
