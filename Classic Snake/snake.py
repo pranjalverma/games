@@ -114,6 +114,7 @@ def gameLoop():
 						gameOver = False
 
 					elif event.key == pygame.K_SPACE:
+						sounds[2].stop()
 						sounds[0].play(loops=-1)
 						gameLoop()
 
