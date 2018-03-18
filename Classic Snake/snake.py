@@ -1,3 +1,8 @@
+'''
+	Classic Snake clone
+	Author: Pranjal Verma
+'''
+
 import pygame
 from random import randrange
 
