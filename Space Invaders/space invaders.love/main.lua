@@ -64,7 +64,7 @@ local centerx, centery = screenWidth/2 - 45, screenHeight/2
 local fireSound = love.audio.newSource('fire_sound.ogg')
 fireSound:setVolume(0.05)
 local gameMusic = love.audio.newSource('space_invaders.ogg')
-gameMusic:setVolume(1.1)
+gameMusic:setVolume(1)
 gameMusic:setLooping(true)
 
 -- Callback for game init
@@ -398,7 +398,7 @@ function enemies_controller:spawnEnemy(x, y, enemyType, enemyWidth)
 		width = enemyWidth, 
 		height = 40,
 		speedx = 0,
-		speedy = 0.15, --0.35
+		speedy = 0.35, -- 0.35
 		enemyType = enemyType,
 		bullets = {},
 		cooldown = 0
@@ -416,7 +416,7 @@ function enemies_controller:spawnBoss()
 		y = 0,
 		width = 53,
 		height = 40,
-		health = 20,
+		health = 35,
 		speedx = 3,
 		speedy = 3,
 		stepsY = 1,
