@@ -5,11 +5,13 @@ AUTHOR: PRANJAL VERMA
 
 ]]--
 
--- ADD AESTHETICS; SOUNDS, BACKGROUND MAYBE (?)
--- ADD RETRO PARTICLE EXPLOSION EFFECT
+-- FIX BOSS FIRING LOGIC
 -- MAYBE ADD A CONF.LUA FILE; LOOK INTO OTHER FILE TYPES FOR LOVE
 
--- Game dimensions
+-- Game dimensions and inits
+love.window.setMode(1440, 900)
+love.window.setFullscreen(true)
+love.window.setTitle('Space Invaders')
 local screenWidth = love.graphics.getWidth()
 local screenHeight = love.graphics.getHeight()
 
@@ -17,7 +19,9 @@ local screenHeight = love.graphics.getHeight()
 local SpaceInvaders = {
 	gameIntro = true,
 	gameInstruct = false,
+	gameBoss = false,
 	gamePause = false,
+	gameMute = false,
 	gameWin = false,
 	gameOver = false
 }
@@ -31,29 +35,44 @@ local player = {
 	health = 5,
 	speed = 5,
 	bullets = {},
-	cooldown = 0
+	cooldown = 0,
+	hitOnce = false
 }
 
 -- Controller object for enemies
 local enemies_controller = {
 	enemies = {},
-	formX = screenWidth/6.35 - 20,
-	formY = screenHeight/10,
+	formX = (screenWidth - 590)/2,
+	formY = screenHeight/4,
 	enemyFireProb = 0.9994, --Probability Threshold for firing
-	enemyTypes = {'1', 'B', 'C', 'j', 'n'},
-	enemyWidths = {53, 45, 40, 40, 40}
+	enemyTypes = {'s', 'B', 'C', 'j', 'n'},
+	bossType = '1',
+	enemyWidths = {45, 50, 40, 40, 40},
+	dead = {}
 }
+
+-- font and related vars
+local titlefont = love.graphics.newFont('invaders.from.space.ttf', 500)
+local explosionfont = love.graphics.newFont('invaders.from.space.ttf', 40)
+local mediumfont = love.graphics.newFont('ca.ttf', 30)
+local smallfont = love.graphics.newFont('ca.ttf', 15)
+local spritefont = love.graphics.newFont('INVADERS.TTF', 30)
+local smallspritefont = love.graphics.newFont('INVADERS.TTF', 15)
+local centerx, centery = screenWidth/2 - 45, screenHeight/2
+
+-- game sounds and music
+local fireSound = love.audio.newSource('fire_sound.ogg')
+fireSound:setVolume(0.05)
+local gameMusic = love.audio.newSource('space_invaders.ogg')
+gameMusic:setVolume(1.1)
+gameMusic:setLooping(true)
 
 -- Callback for game init
 function love.load()
 
-	-- font and related vars
-	titlefont = love.graphics.newFont('invaders.from.space.ttf', 500)
-	mediumfont = love.graphics.newFont('ca.ttf', 30)
-	smallfont = love.graphics.newFont('ca.ttf', 15)
-	spritefont = love.graphics.newFont('INVADERS.TTF', 30)
-	smallspritefont = love.graphics.newFont('INVADERS.TTF', 15)
-	centerx, centery = screenWidth/2 - 45, screenHeight/2
+	-- start game music
+	gameMusic:rewind()
+	gameMusic:play()
 
 	-- following three chunks, incase of a restart
 	SpaceInvaders.gameWin, SpaceInvaders.gameOver = false, false
@@ -88,6 +107,13 @@ end
 -- Callback for updating game state
 function love.update(dt)
 
+	-- Muting game music; fireSound can't be paused like this cuz it needs to be playing to be paused
+	if SpaceInvaders.gameMute then
+		love.audio.pause(gameMusic)
+	else
+		love.audio.resume(gameMusic)
+	end
+
 	-- don't update when game is paused or on intro screen or on instruction screen
 	if SpaceInvaders.gamePause or SpaceInvaders.gameIntro or SpaceInvaders.gameInstruct then
 		return
@@ -96,11 +122,19 @@ function love.update(dt)
 	-- game over if player dies
 	if player.health <= 0 then
 		SpaceInvaders.gameOver = true
-	end 
+	end
 
-	-- checking is num of enemies remaining is zero, for game win
-	if #enemies_controller.enemies == 0 then
-		SpaceInvaders.gameWin = true
+	-- sprite management if player is hit
+	if player.hitOnce then
+		love.timer.sleep(0.5)
+		player.hitOnce = false
+	end
+
+	-- checking is num of enemies remaining is zero, for boss phase
+	if #enemies_controller.enemies == 0 and not SpaceInvaders.gameBoss then
+		SpaceInvaders.gameBoss = true
+		enemies_controller.enemyFireProb = 0.9994 --fix and understand this
+		enemies_controller:spawnBoss()
 	end
 
 	-- player bullet management: gun cooldown and bullet movement loop
@@ -114,12 +148,35 @@ function love.update(dt)
 		end
 	end
 
-	-- enemy control: movement, bullet management and checking for game over
-	for _, e in pairs(enemies_controller.enemies) do
+	-- enemy control: movement, bullet management and checking for game win/over
+	for j, e in ipairs(enemies_controller.enemies) do
 
-		-- movement
-		if not SpaceInvaders.gameIntro then
-			e.y = e.y + e.speed
+		-- boss management; movement; stepsY used for smooth Y motion
+		if SpaceInvaders.gameBoss then
+			if e.x <= 250 or e.x >= screenWidth - 250 then
+				if e.stepsY == e.maxStepsY then
+					e.speedx = (-1) * e.speedx
+					e.x = e.x + e.speedx
+					e.stepsY = 1
+				else
+					e.y = e.y + e.speedy
+					e.stepsY = e.stepsY + 1
+				end
+			else
+				e.x = e.x + e.speedx
+			end
+
+			-- checking if boss defeated, for game win!
+			if e.health <= 0 then
+				table.insert(enemies_controller.dead, e)
+				table.remove(enemies_controller.enemies, j)
+				SpaceInvaders.gameWin = true
+				return
+			end
+
+		-- normal enemy movement
+		elseif not SpaceInvaders.gameIntro then
+			e.y = e.y + e.speedy
 		end
 
 		-- bullet movement loop
@@ -167,8 +224,12 @@ function love.update(dt)
 
 	end
 
-	-- player gunfire 
+	-- player gunfire acc. to gameMute
 	if love.keyboard.isDown('lshift') then
+		if not SpaceInvaders.gameMute then
+			fireSound:play()
+		end
+
 		fire(player)
 	end
 
@@ -181,8 +242,11 @@ function love.draw()
 	-- game instructions screen
 	if SpaceInvaders.gameInstruct then
 		love.graphics.setFont(mediumfont)
-		love.graphics.print('<- -> - Move', centerx - 110, centery - 35)
-		love.graphics.print('lshift - Shoot', centerx - 110, centery + 5)
+		love.graphics.print('<- -> - Move', centerx - 110, centery - 75)
+		love.graphics.print('lshift - Shoot', centerx - 110, centery - 35)
+		love.graphics.print('M - Mute', centerx - 110, centery + 5)
+		love.graphics.print('SPACE - Restart', centerx - 110, centery + 45)
+		love.graphics.print('ESC or Q - Exit', centerx - 110, centery + 85)
 		return
 
 	-- game intro screen
@@ -220,9 +284,14 @@ function love.draw()
 		love.graphics.print('2', 35 + 30*i, 10)
 	end
 
-	-- drawing player sprite
-	love.graphics.setFont(spritefont)
-	love.graphics.print('2', player.x, player.y)
+	-- drawing player sprite and managing sprite if hit
+	if player.hitOnce then
+		love.graphics.setFont(explosionfont)
+		love.graphics.print('X', player.x, player.y)
+	else
+		love.graphics.setFont(spritefont)
+		love.graphics.print('2', player.x, player.y)
+	end
 
 	-- drawing player bullets
 	for _, b in pairs(player.bullets) do
@@ -231,6 +300,7 @@ function love.draw()
 
 	-- drawing enemies and their bullets
 	love.graphics.setColor(255, 0, 0)
+	love.graphics.setFont(spritefont)
 	for i, e in ipairs(enemies_controller.enemies) do
 		love.graphics.print(e.enemyType, e.x, e.y)
 
@@ -238,6 +308,14 @@ function love.draw()
 		for _, b in pairs(e.bullets) do 
 			love.graphics.rectangle('fill', b.x, b.y, b.width, b.height)
 		end
+	end
+
+	-- drawing explosions for dead enemies
+	love.graphics.setFont(explosionfont)
+	for i, e in ipairs(enemies_controller.dead) do
+		love.graphics.print('Z', e.x, e.y)
+		love.timer.sleep(0.05)
+		table.remove(enemies_controller.dead, i)
 	end
 
 	-- game pause screen
@@ -258,7 +336,7 @@ function love.keypressed(key)
 	end
 
 	-- game restart
-	if key == 'space' and (SpaceInvaders.gameOver or SpaceInvaders.gameWin) then
+	if key == 'space' then
 		love.load()
 	end
 
@@ -273,6 +351,10 @@ function love.keypressed(key)
 
 	if key == 'i' then
 		SpaceInvaders.gameInstruct = not SpaceInvaders.gameInstruct
+	end
+
+	if key == 'm' then
+		SpaceInvaders.gameMute = not SpaceInvaders.gameMute
 	end
 
 	-- game quit
@@ -290,7 +372,7 @@ function fire(obj)
 		obj.cooldown = 20
 
 		-- bullet object
-		bullet = {
+		local bullet = {
 			x = 0,
 			y = 0,
 			width = 5,
@@ -310,12 +392,13 @@ end
 function enemies_controller:spawnEnemy(x, y, enemyType, enemyWidth)
 
 	-- enemy object
-	enemy = {
+	local enemy = {
 		x = x,
 		y = y,
 		width = enemyWidth, 
 		height = 40,
-		speed = 0.09,
+		speedx = 0,
+		speedy = 0.15, --0.35
 		enemyType = enemyType,
 		bullets = {},
 		cooldown = 0
@@ -324,6 +407,31 @@ function enemies_controller:spawnEnemy(x, y, enemyType, enemyWidth)
 	table.insert(self.enemies, enemy)
 end
 
+-- Function for spawning boss after all enemies are defeated
+function enemies_controller:spawnBoss()
+
+	--boss object
+	local boss = {
+		x = 0,
+		y = 0,
+		width = 53,
+		height = 40,
+		health = 20,
+		speedx = 3,
+		speedy = 3,
+		stepsY = 1,
+		maxStepsY = 50,
+		enemyType = enemies_controller.bossType,
+		bullets = {},
+		cooldown = 0
+	}
+
+	boss.x = screenWidth/4 - boss.width/2
+	boss.y = 0
+
+	table.insert(self.enemies, boss)
+
+end
 
 -- Collision detection b/w bullets and other game objects; naïve
 function detectCollision()
@@ -338,7 +446,13 @@ function detectCollision()
 				(pb.x + pb.width >= e.x and pb.x + pb.width <= e.x + e.width)) and
 				(pb.y <= e.y + e.height) then
 
-				table.remove(enemies_controller.enemies, i)
+				if SpaceInvaders.gameBoss then
+					e.health = e.health - 1
+				else
+					table.insert(enemies_controller.dead, e)
+					table.remove(enemies_controller.enemies, i)
+				end
+				
 				table.remove(player.bullets, j)
 			end
 
@@ -366,6 +480,7 @@ function detectCollision()
 
 				table.remove(e.bullets, k)
 				player.health = player.health - 1
+				player.hitOnce = true
 			end
 
 		end
