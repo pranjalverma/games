@@ -5,7 +5,6 @@ AUTHOR: PRANJAL VERMA
 
 ]]--
 
--- FIX BOSS FIRING LOGIC
 -- MAYBE ADD A CONF.LUA FILE; LOOK INTO OTHER FILE TYPES FOR LOVE
 
 -- Game dimensions and inits
@@ -83,6 +82,9 @@ function love.load()
 	player.health = 5
 	player.bullets = {}
 
+	-- init boss
+	SpaceInvaders.gameBoss = false
+
 	-- delete all existing enemies
 	enemies_controller.enemies = {}
 
@@ -133,7 +135,6 @@ function love.update(dt)
 	-- checking is num of enemies remaining is zero, for boss phase
 	if #enemies_controller.enemies == 0 and not SpaceInvaders.gameBoss then
 		SpaceInvaders.gameBoss = true
-		enemies_controller.enemyFireProb = 0.9994 --fix and understand this
 		enemies_controller:spawnBoss()
 	end
 
@@ -151,8 +152,12 @@ function love.update(dt)
 	-- enemy control: movement, bullet management and checking for game win/over
 	for j, e in ipairs(enemies_controller.enemies) do
 
+		-- managing enemy fire cooldown
+		e.cooldown = e.cooldown - 1
+
 		-- boss management; movement; stepsY used for smooth Y motion
 		if SpaceInvaders.gameBoss then
+
 			if e.x <= 250 or e.x >= screenWidth - 250 then
 				if e.stepsY == e.maxStepsY then
 					e.speedx = (-1) * e.speedx
@@ -164,6 +169,7 @@ function love.update(dt)
 				end
 			else
 				e.x = e.x + e.speedx
+				fire(e)
 			end
 
 			-- checking if boss defeated, for game win!
@@ -242,11 +248,12 @@ function love.draw()
 	-- game instructions screen
 	if SpaceInvaders.gameInstruct then
 		love.graphics.setFont(mediumfont)
-		love.graphics.print('<- -> - Move', centerx - 110, centery - 75)
-		love.graphics.print('lshift - Shoot', centerx - 110, centery - 35)
-		love.graphics.print('M - Mute', centerx - 110, centery + 5)
-		love.graphics.print('SPACE - Restart', centerx - 110, centery + 45)
-		love.graphics.print('ESC or Q - Exit', centerx - 110, centery + 85)
+		love.graphics.print('<- -> - Move', centerx - 110, centery - 95)
+		love.graphics.print('lshift - Shoot', centerx - 110, centery - 55)
+		love.graphics.print('M - Mute', centerx - 110, centery - 15)
+		love.graphics.print('SPACE - Restart', centerx - 110, centery + 25)
+		love.graphics.print('ESC or Q - Exit', centerx - 110, centery + 65)
+		love.graphics.print('P - Pause', centerx - 110, centery + 105)
 		return
 
 	-- game intro screen
@@ -416,7 +423,7 @@ function enemies_controller:spawnBoss()
 		y = 0,
 		width = 53,
 		height = 40,
-		health = 35,
+		health = 50,
 		speedx = 3,
 		speedy = 3,
 		stepsY = 1,
