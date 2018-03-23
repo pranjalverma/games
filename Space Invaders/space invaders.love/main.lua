@@ -343,7 +343,7 @@ function love.keypressed(key)
 	end
 
 	-- game restart
-	if key == 'space' then
+	if key == 'space' and not (SpaceInvaders.gameIntro or SpaceInvaders.gameInstruct) then
 		love.load()
 	end
 
@@ -425,7 +425,7 @@ function enemies_controller:spawnBoss()
 		y = 0,
 		width = 53,
 		height = 40,
-		health = 50,
+		health = 47,
 		speedx = 3,
 		speedy = 3,
 		stepsY = 1,
