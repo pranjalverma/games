@@ -356,10 +356,12 @@ function love.keypressed(key)
 		SpaceInvaders.gamePause = not SpaceInvaders.gamePause
 	end
 
+	-- game instructions
 	if key == 'i' then
 		SpaceInvaders.gameInstruct = not SpaceInvaders.gameInstruct
 	end
 
+	-- mute music and sounds
 	if key == 'm' then
 		SpaceInvaders.gameMute = not SpaceInvaders.gameMute
 	end
