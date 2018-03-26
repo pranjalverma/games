@@ -5,8 +5,6 @@ AUTHOR: PRANJAL VERMA
 
 ]]--
 
--- MAYBE ADD A CONF.LUA FILE; LOOK INTO OTHER FILE TYPES FOR LOVE
-
 -- Game dimensions and inits
 love.window.setMode(1440, 900)
 love.window.setFullscreen(true)
