@@ -1,6 +1,6 @@
 # Slither!
 
-Your classic snake game, built using pygame. 🐍
+Your classic snake game, built using pygame. 🐍 (completed)
 
 ### Screenshots:
 
