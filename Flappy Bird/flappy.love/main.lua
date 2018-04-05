@@ -10,6 +10,7 @@ AUTHOR: PRANJAL VERMA
 -- requires
 class = require 'middleclass'
 require 'Bird'
+require 'Pipe'
 
 -- Global game constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 1440, 900
@@ -21,9 +22,6 @@ love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
 	fullscreen = true,
 	highdpi = true -- only for Retina Displays
 	})
-
--- Bird object
-local bird = Bird()
 
 -- Game backdrop object
 local backdrop = {
@@ -41,9 +39,19 @@ local ground = {
 	LOOPING_POINT = 100
 }
 
+-- Bird and pipes controller
+local bird = Bird()
+local pipesController = {
+	spawnTimer = 0,
+	pipes = {}
+}
+
 -- Callback for game init
 function love.load()
+
+	-- init nearest-neighbour filter and seed for pipes
 	love.graphics.setDefaultFilter('nearest', 'nearest')
+	math.randomseed(os.time())
 
 	-- creating table to track single key presses, frame by frame
 	love.keyboard.keysPressed = {} 
@@ -58,8 +66,27 @@ function love.update(dt)
 	ground.scrollAmount = (ground.scrollAmount + ground.SCROLL_SPEED * dt)
 							% ground.LOOPING_POINT
 
+	-- track time elapsed (in seconds), spawn if 2 secs have passed
+	pipesController.spawnTimer = pipesController.spawnTimer + dt
+	if pipesController.spawnTimer > 3 then
+		table.insert(pipesController.pipes, Pipe())
+		pipesController.spawnTimer = 0
+	end
+
 	-- update bird
 	bird:update(dt)
+
+	-- update pipes
+	for k, pipe in pairs(pipesController.pipes) do
+
+		-- scroll pipes
+		pipe:update(dt)
+
+		-- delete pipes if they go past screen
+		if pipe.x < -pipe.width then
+			table.remove(pipesController.pipes, k)
+		end
+	end
 
 	-- flushing single-key-presses tracker at end of every frame
 	love.keyboard.keysPressed = {}
@@ -69,18 +96,24 @@ end
 -- Callback for drawing updated game state on the screen
 function love.draw()
 
-	-- drawing backdrop and ground with infinite scrolling
+	-- drawing backdrop with infinite scrolling
 	love.graphics.draw(backdrop.image, -backdrop.scrollAmount, 0)
 	love.graphics.draw(backdrop.image,
 		backdrop.LOOPING_POINT - backdrop.scrollAmount, 0)
 
+	-- draw bird
+	bird:render()
+
+	-- draw pipes
+	for _, pipe in pairs(pipesController.pipes) do
+		pipe:render()
+	end
+
+	-- drawing ground with infinite scrolling; .png is 100x50 px
 	for i=0,144 do
 		love.graphics.draw(ground.image,
 			i*100 - ground.scrollAmount, WINDOW_HEIGHT - 50)
 	end
-
-	-- draw bird
-	bird:render()
 
 end
 
