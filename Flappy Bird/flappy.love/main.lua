@@ -11,6 +11,7 @@ AUTHOR: PRANJAL VERMA
 class = require 'middleclass'
 require 'Bird'
 require 'Pipe'
+require 'PipePair'
 
 -- Global game constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 1440, 900
@@ -42,9 +43,12 @@ local ground = {
 -- Bird and pipes controller
 local bird = Bird()
 local pipesController = {
-	spawnTimer = 0,
-	pipes = {}
+	SPAWN_TIME = 1.8,
+	spawnTimer = 1.8, -- instantly start spawning
+	pipePairs = {}
 }
+
+local gameOver = false
 
 -- Callback for game init
 function love.load()
@@ -53,6 +57,15 @@ function love.load()
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	math.randomseed(os.time())
 
+	--reset bird
+	bird = Bird()
+
+	-- clear pipes
+	pipesController.pipePairs = {}
+
+	-- restart
+	gameOver = false
+
 	-- creating table to track single key presses, frame by frame
 	love.keyboard.keysPressed = {} 
 end
@@ -60,32 +73,51 @@ end
 -- Callback for updating game state
 function love.update(dt)
 
+	-- test code
+	if gameOver then
+		return
+	end
+
 	-- backdrop and ground scroll amount
 	backdrop.scrollAmount = (backdrop.scrollAmount + backdrop.SCROLL_SPEED * dt)
 							% backdrop.LOOPING_POINT
 	ground.scrollAmount = (ground.scrollAmount + ground.SCROLL_SPEED * dt)
 							% ground.LOOPING_POINT
 
-	-- track time elapsed (in seconds), spawn if 2 secs have passed
+	-- track time elapsed (in seconds)
+	-- spawn if SPAWN_TIME secs have passed
 	pipesController.spawnTimer = pipesController.spawnTimer + dt
-	if pipesController.spawnTimer > 3 then
-		table.insert(pipesController.pipes, Pipe())
+	if pipesController.spawnTimer > pipesController.SPAWN_TIME then
+		table.insert(pipesController.pipePairs, PipePair())
 		pipesController.spawnTimer = 0
 	end
 
 	-- update bird
 	bird:update(dt)
 
-	-- update pipes
-	for k, pipe in pairs(pipesController.pipes) do
+	-- update pipes and collision detection
+	for k, pipePair in pairs(pipesController.pipePairs) do
 
 		-- scroll pipes
-		pipe:update(dt)
+		pipePair.top:update(dt)
+		pipePair.bottom:update(dt)
 
 		-- delete pipes if they go past screen
-		if pipe.x < -pipe.width then
-			table.remove(pipesController.pipes, k)
+		-- '*4' to prevent glitch in graphics as table deletion
+		-- causes each other entry to shift in terms of their keys
+		if pipePair.bottom.x < -pipePair.bottom.width * 4 then
+			table.remove(pipesController.pipePairs, k)
 		end
+
+		if not pipePair.scored then
+			bird:addScore(pipePair)
+		end
+
+		-- collision detection
+		if bird:collides(pipePair.top) or bird:collides(pipePair.bottom) then
+			gameOver = true
+		end
+
 	end
 
 	-- flushing single-key-presses tracker at end of every frame
@@ -101,19 +133,22 @@ function love.draw()
 	love.graphics.draw(backdrop.image,
 		backdrop.LOOPING_POINT - backdrop.scrollAmount, 0)
 
+	-- draw pipes
+	for _, pipePair in pairs(pipesController.pipePairs) do
+		pipePair.top:render()
+		pipePair.bottom:render()
+	end
+
 	-- draw bird
 	bird:render()
-
-	-- draw pipes
-	for _, pipe in pairs(pipesController.pipes) do
-		pipe:render()
-	end
 
 	-- drawing ground with infinite scrolling; .png is 100x50 px
 	for i=0,144 do
 		love.graphics.draw(ground.image,
 			i*100 - ground.scrollAmount, WINDOW_HEIGHT - 50)
 	end
+
+	love.graphics.print('Score: ' .. bird.score, 5, 5)
 
 end
 
@@ -126,6 +161,11 @@ function love.keypressed(key)
 	-- game quit
 	if key == 'escape' or key == 'q' then
 		love.event.quit()
+	end
+
+	-- game restart
+	if key == 'lshift' then
+		love.load()
 	end
 end
 
