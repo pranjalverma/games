@@ -5,13 +5,12 @@ AUTHOR: PRANJAL VERMA
 
 ]]--
 
--- USE LÖVELYMOON
-
 -- requires
 class = require 'middleclass'
 require 'Bird'
 require 'Pipe'
 require 'PipePair'
+require 'States/titleScreen'
 
 -- Global game constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 1440, 900
@@ -52,6 +51,8 @@ local gameOver = false
 
 -- Callback for game init
 function love.load()
+	Gamestate.registerEvents()
+    Gamestate.switch(titleScreen)
 
 	-- init nearest-neighbour filter and seed for pipes
 	love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -157,6 +158,11 @@ function love.keypressed(key)
 
 	-- updating keysPressed tracker
 	love.keyboard.keysPressed[key] = true
+
+	-- enter game
+	if key == 'return' then
+		Gamestate.leave(titleScreen)
+	end
 
 	-- game quit
 	if key == 'escape' or key == 'q' then
