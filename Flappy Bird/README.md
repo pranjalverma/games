@@ -6,7 +6,7 @@ Best game to learn about infinite scrolling and procedural generation I suppose;
 
 #### Intro Screen
 
-![Intro Screen](https://github.com/pranjalverma/games/blob/master/Flappy%20Bird/flappy.love/Screenshots/title.png)
+![Intro Screen](https://github.com/pranjalverma/games/blob/master/Flappy%20Bird/flappy.love/Screenshots/Intro%20Screen.png)
 
 #### Instructions toggle
 
