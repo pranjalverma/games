@@ -183,14 +183,17 @@ function love.draw()
 			i*100 - ground.scrollAmount, WINDOW_HEIGHT - 50)
 	end
 
-	-- instructions message and author name
+	-- author name
+	if Gamestates.gameMenu then
+		love.graphics.setFont(fonts.small)
+		love.graphics.print('Made with LOVE2D by Pranjal Verma',
+			WINDOW_WIDTH - 295, WINDOW_HEIGHT - 20)
+	end
+
+	-- instructions message
 	love.graphics.setFont(fonts.normal)
 	love.graphics.print('Press i to toggle instructions',
 		WINDOW_WIDTH - 330, 5)
-
-	love.graphics.setFont(fonts.small)
-	love.graphics.print('Made with LOVE2D by Pranjal Verma',
-		WINDOW_WIDTH - 295, WINDOW_HEIGHT - 20)
 
 	-- ingame handling
 	if not Gamestates.gameMenu then
