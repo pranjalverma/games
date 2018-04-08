@@ -33,13 +33,15 @@ function Pipe:render()
 		love.graphics.draw(PIPE_IMG, self.x, self.y)
 
 		-- sanity checks
-		love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
+		--love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 	else
 		love.graphics.draw(PIPE_IMG, self.x, self.y, math.rad(180))
 
 		-- sanity checks
+		--[[
 		love.graphics.rotate(math.rad(180))
 		love.graphics.rectangle('line', -self.x, -self.y, self.width, self.height)
 		love.graphics.rotate(-math.rad(180))
+		]]--
 	end
 end

@@ -37,7 +37,7 @@ end
 -- draw Bird
 function Bird:render()
 	love.graphics.draw(self.image, self.x, self.y)
-	love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
+	--love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 end
 
 -- collision detection for pipes; acc. to pipe type
