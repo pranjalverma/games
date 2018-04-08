@@ -5,7 +5,7 @@ working on personal game dev projects with LÖVE ♥️ and pygame 🐍
 
 ### Flappy Bird
 
-![Flappy Bird](https://github.com/pranjalverma/games/blob/master/Flappy%20Bird/flappy.love/Screenshots/title.png)
+![Flappy Bird](https://github.com/pranjalverma/games/blob/master/Flappy%20Bird/flappy.love/Screenshots/Intro%20Screen.png)
 
 ### Space Invaders
 
