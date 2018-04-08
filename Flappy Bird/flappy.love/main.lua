@@ -36,6 +36,7 @@ local Gamestates = {
 local fonts = {
 	title = love.graphics.newFont('Fonts/flapfont.ttf', 200),
 	normal = love.graphics.newFont('Fonts/flapfont.ttf', 20),
+	small = love.graphics.newFont('Fonts/flapfont.ttf', 15)
 }
 
 -- Game backdrop object
@@ -182,9 +183,14 @@ function love.draw()
 			i*100 - ground.scrollAmount, WINDOW_HEIGHT - 50)
 	end
 
-	-- instructions message
+	-- instructions message and author name
+	love.graphics.setFont(fonts.normal)
 	love.graphics.print('Press i to toggle instructions',
 		WINDOW_WIDTH - 330, 5)
+
+	love.graphics.setFont(fonts.small)
+	love.graphics.print('Made with LOVE2D by Pranjal Verma',
+		WINDOW_WIDTH - 295, WINDOW_HEIGHT - 20)
 
 	-- ingame handling
 	if not Gamestates.gameMenu then
