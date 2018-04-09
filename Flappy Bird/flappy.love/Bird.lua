@@ -63,10 +63,11 @@ function Bird:collides(pipe)
 end
 
 -- update bird's score
-function Bird:addScore(pipePair)
+function Bird:addScore(pipePair, sound)
 	if self.x >= pipePair.bottom.x + pipePair.bottom.width then
 		self.score = self.score + 1
 		pipePair.scored = true
+		sound:play()
 	end
 end
 

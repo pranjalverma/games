@@ -39,6 +39,13 @@ local fonts = {
 	small = love.graphics.newFont('Fonts/flapfont.ttf', 15)
 }
 
+-- Game sounds
+local sounds = {
+	buttonfeedback = love.audio.newSource('Audio/buttonfeedback.ogg', 'static'),
+	score = love.audio.newSource('Audio/score.ogg', 'static'),
+	gameover = love.audio.newSource('Audio/gameover.ogg', 'static')
+}
+
 -- Game backdrop object
 local backdrop = {
 	image = love.graphics.newImage('Images/backdrop.png'),
@@ -58,8 +65,8 @@ local ground = {
 -- Bird and pipes controller
 local bird = Bird()
 local pipesController = {
-	SPAWN_TIME = 1.8,
-	spawnTimer = 1.8, -- instantly start spawning
+	SPAWN_TIME = 2,
+	spawnTimer = 2, -- instantly start spawning
 	pipePairs = {}
 }
 
@@ -94,6 +101,7 @@ function love.update(dt)
 	-- game over if bird crashes to the ground
 	if bird.y + bird.width > WINDOW_HEIGHT - 50 then
 		Gamestates.gameOver = true
+		sounds.gameover:play()
 	end
 
 	-- backdrop and ground scroll amount
@@ -122,8 +130,8 @@ function love.update(dt)
 	for k, pipePair in pairs(pipesController.pipePairs) do
 
 		-- scroll pipes
-		pipePair.top:update(dt)
-		pipePair.bottom:update(dt)
+		pipePair.top:update(dt, bird.score)
+		pipePair.bottom:update(dt, bird.score)
 
 		-- delete pipes if they go past screen
 		-- '*4' to prevent glitch in graphics as table deletion
@@ -134,12 +142,13 @@ function love.update(dt)
 
 		-- check only those pipe pairs that havn't yet been scored on
 		if not pipePair.scored then
-			bird:addScore(pipePair)
+			bird:addScore(pipePair, sounds.score)
 		end
 
 		-- collision detection
 		if bird:collides(pipePair.top) or bird:collides(pipePair.bottom) then
 			Gamestates.gameOver = true
+			sounds.gameover:play()
 		end
 
 	end
@@ -233,21 +242,25 @@ function love.keypressed(key)
 	-- enter game from menu
 	if key == 'return' then
 		Gamestates.gameMenu = false
+		sounds.buttonfeedback:play()
 	end
 
 	-- toggle game instructions screen
 	if key == 'i' then
 		Gamestates.gameInstruct = not Gamestates.gameInstruct
+		sounds.buttonfeedback:play()
 	end
 
 	-- game quit
 	if key == 'escape' or key == 'q' then
 		love.event.quit()
+		sounds.buttonfeedback:play()
 	end
 
 	-- game restart
 	if key == 'lshift' then
 		love.load()
+		sounds.buttonfeedback:play()
 	end
 end
 
