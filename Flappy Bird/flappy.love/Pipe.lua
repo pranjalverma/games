@@ -21,9 +21,11 @@ function Pipe:initialize(type, y)
 	self.y = y
 
 	self.PIPE_SCROLL_X = -160
-	self.PIPE_SCROLL_Y = 50
+	self.pipeScrollY = 50
 	self.Y_SCROLL_TIME = 2 -- in seconds
-	self.timer = 0
+	self.yScrollTimer = 0
+	self.difficultyTimer = 0
+	self.DIFFICULTY_RAISE_TIME = 3 
 end
 
 -- update pipe's state
@@ -32,15 +34,17 @@ function Pipe:update(dt, score)
 	-- x direction scroll
 	self.x = self.x + (self.PIPE_SCROLL_X * dt)
 
-	-- y direction scroll for difficulty; using timer
+	-- y direction scroll for difficulty; using yScrollTimer
 	if score > 5 then
-		self.y = self.y + (self.PIPE_SCROLL_Y * dt)
-		self.timer = self.timer + dt
+		self.y = self.y + (self.pipeScrollY * dt)
 
-		if self.timer > self.Y_SCROLL_TIME then
-			self.PIPE_SCROLL_Y = -self.PIPE_SCROLL_Y
-			self.timer = 0
+		-- flip direction
+		self.yScrollTimer = self.yScrollTimer + dt
+		if self.yScrollTimer > self.Y_SCROLL_TIME then
+			self.pipeScrollY = -self.pipeScrollY
+			self.yScrollTimer = 0
 		end
+		
 	end
 
 end
