@@ -45,6 +45,8 @@ local sounds = {
 	score = love.audio.newSource('Audio/score.ogg', 'static'),
 	gameover = love.audio.newSource('Audio/gameover.ogg', 'static')
 }
+sounds.score:setVolume(0.3)
+sounds.gameover:setVolume(0.3)
 
 -- Game backdrop object
 local backdrop = {
