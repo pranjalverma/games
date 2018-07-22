@@ -4,11 +4,11 @@ A maze puzzle game in Augmented Reality. Trying my hands on Vuforia with Unity f
 
 ### Screenshots:
 
-#### Side
+#### Top
 
 ![1](https://github.com/pranjalverma/games/blob/master/MazeAR/Screenshots/1.jpg)
 
-#### Top
+#### Side
 
 ![2](https://github.com/pranjalverma/games/blob/master/MazeAR/Screenshots/2.jpg)
 
