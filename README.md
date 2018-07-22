@@ -1,7 +1,7 @@
 # games
 something I always wanted to do, so that's cool I guess
 
-working on personal game dev projects with LÖVE/Love2D ♥️ and pygame 🐍
+working on personal game related projects with LÖVE/Love2D ♥️, pygame 🐍, selenium 🚙 etc.
 
 ### Flappy Bird
 
