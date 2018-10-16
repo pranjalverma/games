@@ -3,7 +3,7 @@ something I always wanted to do, so that's cool I guess
 
 working on personal gamedev related projects with LÖVE/Love2D ♥️, pygame 🐍, selenium 🚙 etc.
 
-### Flappy Bird
+### [Flappy Bird](https://github.com/pranjalverma/games/tree/master/Flappy%20Bird)
 
 ![Flappy Bird](https://github.com/pranjalverma/games/blob/master/Flappy%20Bird/flappy.love/Screenshots/Intro%20Screen.png)
 
